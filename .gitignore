@@ -2,3 +2,9 @@
 .idea/
 __pycache__/
 *.pyc
+venv/
+env/
+.env
+data/docs/*
+data/media/images/*
+*.log*
