@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.models import Base
+from db.models import Base
 
 logger = logging.getLogger(__name__)
 
@@ -20,38 +20,44 @@ class BaseManager(Generic[ModelType, CreateType, UpdateType]):
     def __init__(self, model: ModelType):
         self._model = model
 
-    def get(self, db: AsyncSession, id: str) -> ModelType:
+    async def get(self, db: AsyncSession, id: str) -> ModelType:
         '''Ищет объект в базе по id и возвращает его.'''
         raise NotImplementedError
 
-    def get_multi(
+    async def get_multi(
         self,
         db: AsyncSession,
         limit: Optional[int] = 10,
         offset: Optional[int] = 0
     ) -> List[ModelType]:
         '''Возвращает список всех объектов с заданными параметрами.'''
-        stmt = select(self._model).offset(offset).limit(limit)
-        result = await db.execute(stmt)
-        logger.info(f'Выполнен запрос объектов {self.__class__.__name__}')
-        return result.scalars().all()
+        try:
+            stmt = select(self._model).offset(offset).limit(limit)
+            result = await db.execute(stmt)
+            logger.info(f'Выполнен запрос объектов {self.__class__.__name__}')
+            return result.scalars().all()
+        except Exception as err:
+            logger.error(f'Error getting multi objs {err}', exc_info=True)
 
-    def create(
+    async def create(
         self,
         db: AsyncSession,
         data_in: CreateType,
         **kwargs
     ) -> ModelType:
         '''Создает объект в базе данных.'''
-        data = data_in.model_dump()
-        obj = self._model(**data)
-        db.add(obj)
-        await db.commit()
-        logger.info(f'Создан объект {self.__class__.__name__}')
-        await db.refresh(obj)
-        return obj
+        try:
+            data = data_in.model_dump()
+            obj = self._model(**data)
+            db.add(obj)
+            await db.commit()
+            logger.info(f'Создан объект {self.__class__.__name__}')
+            await db.refresh(obj)
+            return obj
+        except Exception as err:
+            logger.error(f'Error creating obj {err}', exc_info=True)
 
-    def update(
+    async def update(
         self,
         db: AsyncSession,
         db_obj: ModelType,
@@ -60,9 +66,12 @@ class BaseManager(Generic[ModelType, CreateType, UpdateType]):
         '''Обновляет объект в базе и возвращает его.'''
         raise NotImplementedError
 
-    def delete(self, db: AsyncSession, db_obj: ModelType) -> bool:
+    async def delete(self, db: AsyncSession, db_obj: ModelType) -> bool:
         '''Удаляет объект из базы данных.'''
-        await db.delete(db_obj)
-        await db.commit()
-        logger.info(f'Объект {self.__class__.__name__} удален из бд.')
-        return True
+        try:
+            await db.delete(db_obj)
+            await db.commit()
+            logger.info(f'Объект {self.__class__.__name__} удален из бд.')
+            return True
+        except Exception as err:
+            logger.error(f'Error deleting obj {err}', exc_info=True)

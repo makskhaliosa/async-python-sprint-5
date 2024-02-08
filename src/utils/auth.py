@@ -35,21 +35,26 @@ def validate_password(raw_password: str) -> bool:
             'символов, таких как ",.<>?:[]()/\\{}|".'
         )
     )
-    forbidden_chars = r'\W+'
-    upper_chars = r'[A-Z]+'
-    lower_chars = r'[a-z]+'
-    numbers = r'[0-9]+'
-    if (
-        len(raw_password) < 6
-        or re.search(forbidden_chars, raw_password)
-        or not re.search(upper_chars, raw_password)
-        or not re.search(lower_chars, raw_password)
-        or not re.search(numbers, raw_password)
-    ):
-        logger.error('Error validating password')
-        raise pwd_error
-    else:
-        return True
+    try:
+        forbidden_chars = r'\W+'
+        upper_chars = r'[A-Z]+'
+        lower_chars = r'[a-z]+'
+        numbers = r'[0-9]+'
+        if (
+            len(raw_password) < 6
+            or re.search(forbidden_chars, raw_password)
+            or not re.search(upper_chars, raw_password)
+            or not re.search(lower_chars, raw_password)
+            or not re.search(numbers, raw_password)
+        ):
+            logger.error('Error validating password')
+            raise pwd_error
+        else:
+            return True
+    except AttributeError as err:
+        logger.error(f'Attr error validating password {err}', exc_info=True)
+    except ValueError as err:
+        logger.error(f'Value error validating password {err}', exc_info=True)
 
 
 async def get_current_user(
@@ -83,7 +88,7 @@ async def get_current_user(
     if username is None:
         raise credentials_error
     token_data = TokenData(username=username)
-    user = await crud_user.get_user_by_username(
+    user = await crud_user.get_by_username(
         db=db,
         username=token_data.username
     )
@@ -99,12 +104,15 @@ async def authenticate_user(
     password: str
 ) -> BaseUser:
     '''Авторизует и возвращает пользователя.'''
-    user = await crud_user.get_user_by_username(db=db, username=username)
-    if not user:
-        return None
-    if not verify_password(password, user.password):
-        return None
-    return user
+    try:
+        user = await crud_user.get_by_username(db=db, username=username)
+        if not user:
+            return None
+        if not verify_password(password, user.password):
+            return None
+        return user
+    except Exception as err:
+        logger.error(f'Error authenticating user {err}.', exc_info=True)
 
 
 def create_access_token(
@@ -112,12 +120,15 @@ def create_access_token(
     expires_delta: timedelta = timedelta(days=1)
 ) -> str:
     '''Генерирует новый токен.'''
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({'exp': expire})
-    encoded_jwt = jwt.encode(
-        to_encode,
-        app_settings.CRYPTO_SECRET_KEY,
-        algorithms=[app_settings.CRYPTO_ALGORITHM]
-    )
-    return encoded_jwt
+    try:
+        to_encode = data.copy()
+        expire = datetime.utcnow() + expires_delta
+        to_encode.update({'exp': expire})
+        encoded_jwt = jwt.encode(
+            to_encode,
+            app_settings.CRYPTO_SECRET_KEY,
+            algorithm=app_settings.CRYPTO_ALGORITHM
+        )
+        return encoded_jwt
+    except Exception as err:
+        logger.error(f'Error creating token {err}', exc_info=True)

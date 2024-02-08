@@ -1,3 +1,4 @@
+from pathlib import Path
 from datetime import timedelta
 from logging import config
 
@@ -25,6 +26,7 @@ class Settings(BaseSettings):
     CRYPTO_SECRET_KEY: str
     CRYPTO_ALGORITHM: str
     POSTGRES_DSN: str
+    ALLOWED_ORIGINS: str
 
 
 app_settings = Settings()
@@ -45,3 +47,9 @@ ACCESS_TOKEN_EXPIRES = timedelta(
 
 # sqlalchemy url
 SA_URL = app_settings.POSTGRES_DSN
+
+# Корневая директория
+BASE_DIR = Path().resolve()
+DATA_DIR = BASE_DIR / 'data'
+BASE_URL = f'http://{app_settings.HOST}:{app_settings.PORT}'
+SERVER_DATA_DIR = f'{BASE_URL}/data'

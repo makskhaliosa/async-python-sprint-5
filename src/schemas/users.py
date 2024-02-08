@@ -1,18 +1,23 @@
 from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
 from .entities import BaseFile, ConfigDict
 
 
-class BaseUser(BaseModel):
-    '''Схема в базе данных.'''
-    uid: int
+class UserGet(BaseModel):
+    '''Схема для ответа пользователям.'''
+    uid: UUID
     username: str
-    password: str
     files: List[BaseFile]
 
     model_config = ConfigDict(from_attribute=True)
+
+
+class BaseUser(UserGet):
+    '''Схема в базе данных.'''
+    password: str
 
 
 class UserCreate(BaseModel):

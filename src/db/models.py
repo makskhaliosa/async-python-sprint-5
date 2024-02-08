@@ -10,7 +10,7 @@ Base = declarative_base()
 class User(Base):
     '''Таблица с пользователями.'''
 
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     uid = Column(Uuid, default=uuid4, primary_key=True)
     username = Column(
@@ -24,7 +24,7 @@ class User(Base):
         'File',
         back_populates='user',
         lazy='selectin',
-        order_by='created'
+        order_by='File.created'
     )
 
 
@@ -39,5 +39,5 @@ class File(Base):
     path = Column(String(length=250), nullable=True)
     size = Column(Float, nullable=True)
     extension = Column(String(length=10), nullable=True)
-    user_id = Column(ForeignKey('user.uid', ondelete='CASCADE'))
+    user_id = Column(ForeignKey('users.uid', ondelete='CASCADE'))
     user = relationship('User', back_populates='files')

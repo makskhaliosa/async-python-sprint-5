@@ -1,18 +1,19 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
 
 class BaseFile(BaseModel):
     '''Схема объекта в БД.'''
-    fid: str
+    fid: UUID
     name: str
     created: datetime
     path: str
     size: float | int
     extension: str
-    user_id: str
+    user_id: UUID
 
     model_config = ConfigDict(from_attribute=True)
 
@@ -23,13 +24,22 @@ class FileCreate(BaseModel):
     path: str
     size: float | int
     extension: str
-    user_id: str
+    user_id: UUID
 
 
 class FileUpdate(BaseModel):
     '''Схема данных для обновления объекта.'''
     name: Optional[str]
     path: Optional[str]
-    size: Optional[float, int]
+    size: Union[float, int, None]
     extension: Optional[str]
-    user_id: Optional[str]
+    user_id: Optional[UUID]
+
+
+class FileFilter(BaseModel):
+    '''Набор фильтров для файлов.'''
+    path: Optional[str] = None
+    extension: Optional[str] = None
+    order_by: Optional[str] = None
+    limit: Optional[int] = None
+    query: Optional[str] = None
