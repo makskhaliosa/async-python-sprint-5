@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     CRYPTO_ALGORITHM: str
     POSTGRES_DSN: str
     ALLOWED_ORIGINS: str
+    REDIS_HOST: str
+    REDIS_PORT: int
+    S3_ACCESS_KEY: str
+    S3_SECRET_KEY: str
 
 
 app_settings = Settings()
@@ -53,3 +57,6 @@ BASE_DIR = Path().resolve()
 DATA_DIR = BASE_DIR / 'data'
 BASE_URL = f'http://{app_settings.HOST}:{app_settings.PORT}'
 SERVER_DATA_DIR = f'{BASE_URL}/data'
+
+# Redis settings
+REDIS_TTL = 1  # TTL в днях

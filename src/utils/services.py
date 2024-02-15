@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def write_data(filepath: FilePath, data: bytes | str):
-    '''Сохраняет данные в файл filepath.'''
+    '''Сохраняет данные в файл под названием filepath.'''
     try:
         mode = 'wb'
         if isinstance(data, str):

@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from functools import partial
 from typing import Annotated, List, Optional
 from uuid import UUID
@@ -7,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.settings import DATA_DIR
+from core.redis import redis_client
+from core.settings import DATA_DIR, REDIS_TTL
 from db.crud import crud_file
 from db.session import get_session
 from schemas.entities import BaseFile, FileCreate, FileFilter
@@ -80,17 +82,25 @@ async def download_file(
 
     USER_DIR = f'{DATA_DIR}/{current_user.username}'
     if path:
-        file = await crud_file.get_by_path(db=db, path=path)
-        if not file:
-            raise file_not_found_error
+        cached = await redis_client.exists(path)
+        if not cached:
+            file = await crud_file.get_by_path(db=db, path=path)
+            if not file:
+                raise file_not_found_error
+
+            await redis_client.setex(path, timedelta(days=REDIS_TTL), 1)
 
         file_url = f'{USER_DIR}/{path}'
         return FileResponse(path=file_url, filename=file.name)
 
     elif file_id:
-        file = await crud_file.get(db=db, fid=file_id)
-        if not file:
-            raise file_not_found_error
+        cached = await redis_client.exists(file_id)
+        if not cached:
+            file = await crud_file.get(db=db, fid=file_id)
+            if not file:
+                raise file_not_found_error
+
+            await redis_client.setex(file_id, timedelta(days=REDIS_TTL), 1)
 
         file_url = f'{USER_DIR}/{file.path}'
         return FileResponse(path=file_url, filename=file.name)
