@@ -39,10 +39,14 @@ async def upload_file(
     data = await file.read()
 
     USER_DIR = DATA_DIR / current_user.username
-    filepath, data_path, filename = get_path_name(path, USER_DIR)
+    path_for_user, data_path, filename = get_path_name(path, USER_DIR)
+
+    path_for_user = f'{current_user.username}/{path_for_user}'
+
     if not filename:
         filename = file.filename
         data_path = data_path / filename
+        path_for_user = f'{path_for_user}/{filename}'
     ext = filename.split('.')[-1]
 
     await run_in_executor(
@@ -51,7 +55,7 @@ async def upload_file(
 
     file_schema = FileCreate(
         name=filename,
-        path=filepath,
+        path=path_for_user,
         size=file.size,
         extension=ext,
         user_id=current_user.uid
@@ -80,29 +84,47 @@ async def download_file(
         detail='Файл не найден в базе, проверьте введенные данные.'
     )
 
-    USER_DIR = f'{DATA_DIR}/{current_user.username}'
+    # USER_DIR = f'{DATA_DIR}/{current_user.username}'
+
     if path:
-        cached = await redis_client.exists(path)
-        if not cached:
+        file_name = await redis_client.get(path)
+        logger.info(f"Ping successful: {await redis_client.ping()}")
+        logger.info(file_name)
+        await redis_client.aclose()
+        if not file_name:
             file = await crud_file.get_by_path(db=db, path=path)
             if not file:
                 raise file_not_found_error
 
-            await redis_client.setex(path, timedelta(days=REDIS_TTL), 1)
+            await redis_client.setex(
+                name=path,
+                time=timedelta(days=REDIS_TTL),
+                value=file.name
+            )
+            await redis_client.aclose()
+            file_name = file.name
 
-        file_url = f'{USER_DIR}/{path}'
-        return FileResponse(path=file_url, filename=file.name)
+        file_url = f'{DATA_DIR}/{path}'
+        return FileResponse(path=file_url, filename=file_name)
 
     elif file_id:
-        cached = await redis_client.exists(file_id)
-        if not cached:
+        file_name = await redis_client.get(file_id)
+        logger.info(f"Ping successful: {await redis_client.ping()}")
+        logger.info(file_name)
+        await redis_client.aclose()
+        if not file_name:
             file = await crud_file.get(db=db, fid=file_id)
             if not file:
                 raise file_not_found_error
 
-            await redis_client.setex(file_id, timedelta(days=REDIS_TTL), 1)
+            await redis_client.setex(
+                name=file_id,
+                time=timedelta(days=REDIS_TTL),
+                value=file.name
+            )
+            await redis_client.aclose()
 
-        file_url = f'{USER_DIR}/{file.path}'
+        file_url = f'{DATA_DIR}/{file.path}'
         return FileResponse(path=file_url, filename=file.name)
 
     raise HTTPException(
@@ -119,6 +141,7 @@ async def file_search(
 ) -> List[BaseFile]:
     '''Возвращает список файлов по заданным параметрам.'''
     filters = {k: v for k, v in options.model_dump().items() if v}
-    filters = {'user_id': current_user.uid}
-    result = await crud_file.get_by_filters(db=db, **filters)
+    filters.update({'user_id': current_user.uid})
+    logger.info(filters)
+    result = await crud_file.get_by_filters(db=db, options=filters)
     return result

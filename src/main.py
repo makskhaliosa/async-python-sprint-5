@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 
-from api.v1 import auth_router, file_router
+from api.v1 import v1_router
 from core.logger import LOGGING_CONFIG
 from core.settings import app_settings
 
@@ -13,8 +13,7 @@ app = FastAPI(
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse
 )
-app.include_router(auth_router)
-app.include_router(file_router)
+app.include_router(v1_router)
 
 app.add_middleware(
     CORSMiddleware,

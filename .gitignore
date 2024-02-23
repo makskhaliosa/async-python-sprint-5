@@ -7,3 +7,4 @@ env/
 .env
 data/*
 *.log*
+src/core/s3.py

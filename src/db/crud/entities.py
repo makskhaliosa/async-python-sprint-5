@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Dict, List
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -77,7 +77,11 @@ class FileManager(BaseManager[File, FileCreate, FileUpdate]):
         except Exception as err:
             logger.error(f'Error getting by path {err}', exc_info=True)
 
-    async def get_by_filters(self, db: AsyncSession, **options) -> List[File]:
+    async def get_by_filters(
+        self,
+        db: AsyncSession,
+        options: Dict
+    ) -> List[File]:
         '''Ищет объекты в соответствии с заданными фильтрами.'''
         ordering = None
         limit = None

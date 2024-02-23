@@ -1,4 +1,3 @@
-from .users.auth import auth_router
-from .handlers.files import file_router
+from .base import v1_router
 
-__all__ = [auth_router, file_router]
+__all__ = ['v1_router']

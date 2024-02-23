@@ -15,8 +15,9 @@ class UserGet(BaseModel):
     model_config = ConfigDict(from_attribute=True)
 
 
-class BaseUser(UserGet):
-    '''Схема в базе данных.'''
+class BaseUser(BaseModel):
+    '''Схема в базе данных без связанных моделей.'''
+    username: str
     password: str
 
 

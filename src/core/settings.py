@@ -29,8 +29,6 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str
     REDIS_HOST: str
     REDIS_PORT: int
-    S3_ACCESS_KEY: str
-    S3_SECRET_KEY: str
 
 
 app_settings = Settings()
@@ -39,7 +37,7 @@ app_settings = Settings()
 config.dictConfig(LOGGING_CONFIG)
 
 # Схема авторизации пользователей
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/token', auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/token', auto_error=False)
 
 # Схема шифрования пароля пользователя
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
