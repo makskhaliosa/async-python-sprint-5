@@ -84,8 +84,6 @@ async def download_file(
         detail='Файл не найден в базе, проверьте введенные данные.'
     )
 
-    # USER_DIR = f'{DATA_DIR}/{current_user.username}'
-
     if path:
         file_name = await redis_client.get(path)
         logger.info(f"Ping successful: {await redis_client.ping()}")

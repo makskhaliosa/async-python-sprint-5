@@ -36,7 +36,7 @@ def validate_password(raw_password: str) -> bool:
         )
     )
     try:
-        forbidden_chars = r'\W+'
+        forbidden_chars = r'[\,\.\<\>\?\:\[\]\(\)\/\\\{\}\|\"\.]'
         upper_chars = r'[A-Z]+'
         lower_chars = r'[a-z]+'
         numbers = r'[0-9]+'

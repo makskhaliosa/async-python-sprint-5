@@ -1,0 +1,22 @@
+version: '3.0'
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    env_file: '.env'
+    environment:
+      POSTGRES_DB: 'test_storage'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    ports:
+      - 5555:5432
+
+  cache:
+    image: redis:latest
+    restart: always
+    env_file: '.env'
+    ports:
+      - 6379:6379

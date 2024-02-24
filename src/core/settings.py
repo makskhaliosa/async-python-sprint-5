@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     APP_TITLE: str = 'File Storage'
     HOST: str
+    HOST_TEST: str
     PORT: int
     ACCESS_TOKEN_EXPIRE_DAYS: int
     # для получения секретного ключа в командной строке зпустите команду:
@@ -26,9 +27,12 @@ class Settings(BaseSettings):
     CRYPTO_SECRET_KEY: str
     CRYPTO_ALGORITHM: str
     POSTGRES_DSN: str
+    POSTGRES_DSN_TEST: str
     ALLOWED_ORIGINS: str
     REDIS_HOST: str
     REDIS_PORT: int
+    REDIS_HOST_TEST: str
+    TESTING: bool
 
 
 app_settings = Settings()
@@ -48,13 +52,24 @@ ACCESS_TOKEN_EXPIRES = timedelta(
 )
 
 # sqlalchemy url
-SA_URL = app_settings.POSTGRES_DSN
+SA_URL = (
+    app_settings.POSTGRES_DSN_TEST
+    if app_settings.TESTING
+    else app_settings.POSTGRES_DSN
+)
+
+APP_HOST = (
+    app_settings.HOST_TEST
+    if app_settings.TESTING
+    else app_settings.HOST
+)
+
 
 # Корневая директория
 BASE_DIR = Path().resolve()
 DATA_DIR = BASE_DIR / 'data'
-BASE_URL = f'http://{app_settings.HOST}:{app_settings.PORT}'
-SERVER_DATA_DIR = f'{BASE_URL}/data'
+DATA_DIR.mkdir(exist_ok=True)
+BASE_URL = f'http://{APP_HOST}:{app_settings.PORT}'
 
 # Redis settings
 REDIS_TTL = 1  # TTL в днях

@@ -1,4 +1,4 @@
-LOG_HANDLER = ['filehandler',]
+LOG_HANDLER = ['console',]
 LOG_FORMAT_VERBOSE = (
     '%(asctime)s - %(name)s - %(levelname)s: '
     '%(funcName)s - %(lineno)d - %(message)s'

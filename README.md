@@ -36,6 +36,24 @@ docker compose up -d
 
 ### Документация будет доступна по адресу http://127.0.0.1:9000/api/openapi
 
+## Для запуска тестов
+1. Запустите базу данных в контейнере
+```bash
+docker compose -f docker-compose-test.yml up -d
+```
+
+2. В файле .env поставьте значение APP_TESTING=True.
+
+3. Выполните миграции
+```bash
+alembic upgrade head
+```
+
+4. Запустите тесты
+```bash
+pytest
+```
+
 ---
 # Проектное задание пятого спринта
 

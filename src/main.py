@@ -5,7 +5,7 @@ from fastapi.responses import ORJSONResponse
 
 from api.v1 import v1_router
 from core.logger import LOGGING_CONFIG
-from core.settings import app_settings
+from core.settings import app_settings, APP_HOST
 
 app = FastAPI(
     title=app_settings.APP_TITLE,
@@ -27,7 +27,7 @@ app.add_middleware(
 if __name__ == "__main__":
     uvicorn.run(
         'main:app',
-        host=app_settings.HOST,
+        host=APP_HOST,
         port=app_settings.PORT,
         reload=True,
         log_config=LOGGING_CONFIG
